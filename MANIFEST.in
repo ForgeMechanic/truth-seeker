@@ -1,0 +1,8 @@
+include SKILL.md README.md LICENSE pyproject.toml
+include scripts/truth-seeker.py scripts/validate-skill.py scripts/prepare-evaluation.py
+recursive-include references *.md
+recursive-include schemas *.json
+recursive-include templates *.md
+recursive-include specs *.md
+recursive-include tests *.py *.md *.json
+recursive-include .github/workflows *.yml

@@ -4,6 +4,7 @@
 **Owner:** ForgeMechanic  
 **Intended repository:** `https://github.com/ForgeMechanic/truth-seeker` (existence and public visibility not verified)  
 **Distribution:** Public, open-source, source-distributed Agent Skill  
+**License:** Apache License, Version 2.0 (`Apache-2.0`); see [LICENSE](../LICENSE)  
 **Implementation:** Python scripts plus `SKILL.md`; no compiled binary distribution
 
 ## 1. Purpose and current scope
@@ -166,7 +167,7 @@ Support Windows, macOS, and Linux. Account for platform differences in paths, ca
 
 Include unit and integration tests for the Python tooling, covering initialization, source resolution, cache-only operation, persistent records, and platform assumptions. Run applicable tests in GitHub Actions on actual Windows, macOS, and Linux runners, including paths with spaces, Unicode filenames, and platform-specific path conventions.
 
-Make shipped source, imports, subprocess use, file permissions, and network behavior inspectable and documented. An open-source license must be selected before release; no final license choice is established here.
+Make shipped source, imports, subprocess use, file permissions, and network behavior inspectable and documented. Distribute Truth Seeker under the Apache License, Version 2.0 (`Apache-2.0`), as provided in the repository's [LICENSE](../LICENSE).
 
 ## 11. Acceptance scenarios
 
@@ -206,7 +207,7 @@ The following are not settled requirements or selected implementation designs:
 - Hash algorithm and cache object layout; content hashes are required, but a specific content-addressable storage design is not selected.
 - Minimum Python version, external dependency policy, and document parsing libraries.
 - Command names, flags, Python entry points, package layout, and installation details.
-- Final open-source license and release plan.
+- Release plan.
 
 ## 13. Broader ideas set aside
 

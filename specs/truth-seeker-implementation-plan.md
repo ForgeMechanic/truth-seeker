@@ -1,11 +1,11 @@
 # Truth Seeker Implementation Plan
 
-**Status:** Proposed implementation plan  
+**Status:** Implemented locally; external platform CI validation pending  
 **Governing requirements:** [Truth Seeker Requirements Specification](truth-seeker-spec.md)
 
 Build Truth Seeker as a portable Agent Skill with Python helpers for persistent records, evidence identity, review selection, and cache management. The agent performs the adversarial assessment and user interview. The first milestone should demonstrate a complete review using local evidence; later milestones extend that working path until it meets all current acceptance scenarios.
 
-This plan does not change the specification. Technical choices below are proposals for implementation, not previously accepted requirements. No implementation, installation, commit, or publication is part of preparing this plan.
+This plan does not change the specification. The starting choices below were implementation proposals, not user requirements. Adopted choices are recorded in [implementation design](implementation-design.md), and execution evidence and remaining validation are recorded in [implementation validation](implementation-validation.md). Publication remains a separate authorized action.
 
 ## 1. Responsibilities and deliverables
 
@@ -161,7 +161,7 @@ Deliver:
 - Behavioral exercises with a real agent using the skill and temporary consumer fixtures. Check recorded outcomes, scope, user questions, decision preservation, and attempted side effects.
 - A standard skill-format validation pass for frontmatter, references, and unfinished scaffold content, alongside behavioral evaluation.
 - Concise installation and usage documentation, supported Python and document-format details, and declared file, network, subprocess, and dependency behavior.
-- A selected license before release and a source-only installation check. Publication remains a separate authorized action.
+- Inclusion of the selected Apache License, Version 2.0 (`Apache-2.0`), and a source-only installation check. Publication remains a separate authorized action.
 
 Keep agent-specific UI metadata optional. Validate the core workflow without requiring a particular proprietary host integration. Behavioral exercises should cover reasonable paraphrases of user requests; tests that merely search for required words in `SKILL.md` are not sufficient.
 
@@ -194,7 +194,7 @@ Resolve decisions close to the milestone that needs them. No additional feature 
 - Before milestone 4 acquisition is enabled: URL schemes, cache root and object layout, import metadata, update checking, and cache retention and sharing behavior.
 - Before milestone 5 formats are advertised: parser dependencies, supported locators, and known extraction limitations.
 - Before source removal involving shared findings: user-approved handling of those findings; decisions already have explicit preservation requirements.
-- Before distribution: helper invocation and package layout, supported versions, installation procedure, license, and release authorization.
+- Before distribution: helper invocation and package layout, supported versions, installation procedure, inclusion of the Apache 2.0 license, and release authorization.
 
 ## 6. Initial implementation target
 

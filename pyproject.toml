@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "truth-seeker-skill"
+version = "0.1.0"
+description = "Portable evidence and history helpers for the Truth Seeker Agent Skill"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+dependencies = ["jsonschema>=4.23,<5", "pypdf>=5,<7"]
+
+[project.scripts]
+truth-seeker = "truth_seeker.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "scripts"}
+packages = ["truth_seeker", "truth_seeker.data"]
+
+[tool.setuptools.package-data]
+truth_seeker = ["data/*.json", "data/*.md"]

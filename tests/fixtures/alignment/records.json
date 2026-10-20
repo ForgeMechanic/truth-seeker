@@ -1,0 +1,22 @@
+{
+  "sources": [
+    {"id":"contract","origin":"repository","path":"contract.md","kind":"markdown","role":"project contract","scope":"Parser behavior"},
+    {"id":"compatibility","origin":"repository","path":"compatibility.md","kind":"markdown","role":"compatibility requirements","scope":"Current protocol applicability undecided"},
+    {"id":"architecture","origin":"repository","path":"architecture.md","kind":"markdown","role":"project architecture","scope":"Component responsibility"}
+  ],
+  "tests": [
+    {"id":"valid","path":"test_parser.py","selector":{"python":"test_valid_input"},"assertion":"Valid input returns the decoded value"},
+    {"id":"invalid","path":"test_parser.py","selector":{"python":"test_invalid_input"},"assertion":"Invalid input returns -1"},
+    {"id":"ownership","path":"test_parser.py","selector":{"python":"test_validation_ownership"},"assertion":"Storage owns validation"},
+    {"id":"legacy","path":"test_parser.py","selector":{"python":"test_legacy_empty"},"assertion":"Legacy empty input is accepted"},
+    {"id":"extra","path":"test_parser.py","selector":{"python":"test_extra_feature"},"assertion":"Extra statistics feature"}
+  ],
+  "links": [
+    {"id":"valid-contract","test_id":"valid","source_id":"contract","selector":{"heading":"Valid input"},"nature":"behavior","rationale":"Established valid-input rule","status":"established"},
+    {"id":"invalid-contract","test_id":"invalid","source_id":"contract","selector":{"heading":"Invalid input"},"nature":"behavior","rationale":"Established invalid-input rule","status":"established"},
+    {"id":"invalid-compatibility","test_id":"invalid","source_id":"compatibility","selector":{"heading":"Invalid input"},"nature":"behavior","rationale":"Potentially conflicting established rule","status":"established"},
+    {"id":"ownership-design","test_id":"ownership","source_id":"architecture","nature":"architecture","rationale":"Documented validation responsibility","status":"established"},
+    {"id":"legacy-contract","test_id":"legacy","source_id":"contract","selector":{"heading":"Legacy empty input"},"nature":"behavior","rationale":"Known compatibility exception","status":"established"}
+  ],
+  "decision": {"id":"legacy-exception","statement":"Accept empty input for legacy consumers","rationale":"Existing legacy consumers depend on empty input acceptance","test_ids":["legacy"],"source_ids":["contract"],"status":"proposed"}
+}
