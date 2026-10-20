@@ -1,8 +1,8 @@
 # Truth Seeker implementation validation
 
 The current checkout implements the seven milestones in the [implementation
-plan](truth-seeker-implementation-plan.md). This record distinguishes local evidence
-from validation still requiring external CI or another agent host.
+plan](truth-seeker-implementation-plan.md). This record distinguishes local and
+GitHub CI evidence from validation still requiring another agent host.
 
 ## Local validation
 
@@ -14,7 +14,7 @@ from validation still requiring external CI or another agent host.
 | Skill-creator structural validation | Passed |
 | Isolated helper installation and source-archive smoke exercise | Passed |
 | Initial GitHub Actions run | Both Linux jobs passed; Windows/macOS exposed path-alias and fixture-newline assumptions |
-| Portability corrections | Actual Windows/macOS rerun pending |
+| Portability corrections | All six Linux/Windows/macOS jobs passed on Python 3.11 and 3.14; [verified run](https://github.com/ForgeMechanic/truth-seeker/actions/runs/39364383733) |
 
 The automated suite exercises deterministic behavior using temporary consumer
 repositories and cache roots. It covers record validity and interrupted writes,
@@ -101,10 +101,10 @@ requirements specification. Test names are in `tests/test_workflow.py` unless no
 | 17 Missing or moved source | `test_missing_source_is_reported_without_deletion`; URL relocation and refresh-preservation tests in `test_evidence.py` |
 | 18 One source removed | `test_removing_one_of_three_sources_preserves_decision`, source-only history removal and shared-finding preservation tests |
 | 19 Independent readability | `test_initialize_is_readable_and_non_destructive`; isolated package and source-archive initialization |
-| 20 Portability and inspection | CLI/path integration, declared permissions/dependencies, structural validation; actual Windows/macOS runs remain pending |
+| 20 Portability and inspection | CLI/path integration, declared permissions/dependencies, structural validation; all six actual OS/Python jobs passed in the verified run |
 | 21 Last-source removal | `test_last_source_requires_current_impact_confirmation_and_preserves_decision`, source-only history test, generated unresolved handling question |
 
-## Remaining external validation and supported limits
+## Validation scope and supported limits
 
 `.github/workflows/test.yml` defines actual Ubuntu, Windows and macOS jobs for Python
 3.11 and 3.14, including source installation, the test suite, skill validation, and
@@ -119,8 +119,10 @@ first-party files and redirected CLI output in UTF-8/LF, accept BOM-prefixed UTF
 handle native directory arguments and home-relative paths consistently, and use user
 cache defaults when platform environment variables are empty. Regression checks cover
 these cases, directory aliases and cache containment, and bundle validation that
-distinguishes actual schema drift from newline differences. The actual OS matrix
-must pass on the corrected revision before claiming cross-platform validation.
+distinguishes actual schema drift from newline differences. The [corrected revision
+`c4d1bbf`](https://github.com/ForgeMechanic/truth-seeker/actions/runs/39364383733)
+passed all six actual OS/Python jobs, including source installation, tests, skill
+validation, and wheel construction.
 
 Containment and directory selection also check filesystem identity when resolved
 spellings differ, covering case aliases on case-insensitive volumes without folding

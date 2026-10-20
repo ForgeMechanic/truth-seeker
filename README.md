@@ -4,7 +4,7 @@ Truth Seeker is an Agent Skill that adversarially reviews existing unit tests ag
 
 A discrepancy is something to investigate, not automatic proof that a test is wrong. Documentation may be outdated, a test may encode a mistaken assumption, or a difference may be intentional. The agent asks you when a judgment call is needed and remembers your answer.
 
-**Status:** Initial source implementation. The portable skill and Python helpers are available in this checkout. Local tests and evaluation evidence are described in [validation](specs/implementation-validation.md); the Windows/macOS CI matrix must run before portability is considered verified on those platforms. This is not a standalone AI service: your agent performs the reasoning and interview.
+**Status:** Initial source implementation. The portable skill and Python helpers are available in this checkout. The Python 3.11 and 3.14 CI jobs pass on Linux, Windows, and macOS; see the [validation record](specs/implementation-validation.md) for results and supported limits. This is not a standalone AI service: your agent performs the reasoning and interview.
 
 ## Install from source
 
@@ -34,7 +34,7 @@ Point the agent at that virtual environment's Python when running helpers. Alter
 
 Codex discovers user skills in `~/.agents/skills`; see its [official skill documentation](https://learn.chatgpt.com/docs/build-skills). For other compatible hosts, put this directory in the host's documented skill location and use its normal skill invocation. The core workflow does not require a proprietary host API.
 
-These instructions install the revision you clone. Before these changes are published, use this local checkout or copy it into the host's skill directory; the GitHub default branch may not yet contain the implementation.
+These instructions install the revision you clone.
 
 ## Start using it
 

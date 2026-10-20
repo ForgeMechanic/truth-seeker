@@ -1,6 +1,6 @@
 # Truth Seeker Implementation Plan
 
-**Status:** Implemented locally; external platform CI validation pending  
+**Status:** Implemented; Linux, Windows, and macOS CI validation passed  
 **Governing requirements:** [Truth Seeker Requirements Specification](truth-seeker-spec.md)
 
 Build Truth Seeker as a portable Agent Skill with Python helpers for persistent records, evidence identity, review selection, and cache management. The agent performs the adversarial assessment and user interview. The first milestone should demonstrate a complete review using local evidence; later milestones extend that working path until it meets all current acceptance scenarios.
