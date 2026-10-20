@@ -1,10 +1,11 @@
 """Review orchestration data and explicit lifecycle operations, without AI judgment."""
 import copy
 import uuid
+from pathlib import Path
 
 from .errors import Conflict, TruthSeekerError
 from .evidence import Evidence
-from .util import confined, digest, now
+from .util import confined, digest, is_within, now
 
 
 def identifier(prefix):
@@ -88,7 +89,7 @@ class Service:
         if kind == "directory":
             directory = confined(self.store.root, value)
             return sorted(k for k, test in state["tests"].items()
-                          if confined(self.store.root, test["path"]).is_relative_to(directory))
+                          if is_within(directory, confined(self.store.root, test["path"])))
         raise TruthSeekerError("Scope type must be test, group, directory or repository")
 
     def select(self, state, scope, fresh=False):
@@ -256,7 +257,7 @@ class Service:
         source = state["sources"][source_id]
         if source["origin"] != "external":
             raise TruthSeekerError("Cache import requires an established external source")
-        with open(path, "rb") as stream:
+        with Path(path).expanduser().open("rb") as stream:
             metadata = self.cache.import_bytes(source["url"], stream.read(64 * 1024 * 1024 + 1),
                                                expected_hash=expected_hash, version=version)
         return self.adopt_observation(source_id, metadata, adopt, state["generation"])

@@ -54,11 +54,27 @@ section-specific review. Raw artifact hashes remain in review provenance rather 
 forcing every section review stale. Packet tokens bind both the selected basis and
 the exact artifacts, preventing completion after evidence changed during inspection.
 
+Extractor version 2 normalizes CRLF and CR to LF in extracted text before selection
+and hashing. The original bytes and their SHA-256 identities remain untouched, so
+cache integrity and review provenance still distinguish byte-different artifacts.
+Changing checkout line endings alone does not invalidate an existing version 2 text
+review. Older version 1 reviews retain their original basis and may require review
+under the new extractor; no accepted decisions or baselines are rewritten on upgrade.
+
 Helpers read working-tree bytes, including staged/unstaged/untracked registered
 files; they do not infer chronological ordering from commit dates or invoke Git.
 Logical test identity is distinct from content identity. Python tests can use qualified
 AST symbols; other languages can use explicit file or line ranges. Pure location
 changes require established identity. Changed test content still causes review.
+
+Repository roots and cache boundaries use resolved filesystem paths and filesystem
+identity, including symlink, short-name and case aliases. Case-sensitive siblings
+remain distinct. User-supplied root, cache, JSON-input
+and imported-file paths support home expansion. CLI directory scopes accept native
+OS separators and store forward-slash relative locators; committed locators retain
+that portable format. First-party JSON and instructions are written as UTF-8 with LF
+endings; UTF-8 JSON input may include a BOM. CLI output and errors explicitly use
+UTF-8 even when redirected through a Windows code page.
 
 Markdown selectors support ATX heading paths. HTML heading names/IDs, standard Word
 heading styles and PDF page/bookmark locators are deterministic within supported

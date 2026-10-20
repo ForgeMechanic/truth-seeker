@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from jsonschema import Draft202012Validator
 
 from .errors import Conflict, TruthSeekerError
-from .util import atomic_json, confined, read_json
+from .util import atomic_json, confined, read_json, write_utf8
 
 COLLECTIONS = ("sources", "tests", "links", "decisions", "questions", "reviews", "todos", "runs")
 
@@ -20,7 +20,7 @@ def resources():
 
 
 def find_root(path):
-    path = Path(path).resolve()
+    path = Path(path).expanduser().resolve()
     for candidate in (path, *path.parents):
         if (candidate / ".truth-seeker" / "manifest.json").exists():
             return candidate
@@ -29,7 +29,7 @@ def find_root(path):
 
 class Store:
     def __init__(self, root):
-        self.root = Path(root).resolve()
+        self.root = Path(root).expanduser().resolve()
         self.directory = self.root / ".truth-seeker"
         self.path = self.directory / "knowledge.json"
         if self.directory.is_symlink():
@@ -45,8 +45,8 @@ class Store:
         try:
             (store.directory / "schemas").mkdir()
             for name in ("knowledge.schema.json", "manifest.schema.json"):
-                (store.directory / "schemas" / name).write_bytes(resources().joinpath(name).read_bytes())
-            (store.directory / "AGENTS.md").write_bytes(resources().joinpath("AGENTS.md").read_bytes())
+                write_utf8(store.directory / "schemas" / name, resources().joinpath(name).read_text(encoding="utf-8-sig"))
+            write_utf8(store.directory / "AGENTS.md", resources().joinpath("AGENTS.md").read_text(encoding="utf-8-sig"))
             state = {"format": "truth-seeker", "schemaVersion": 1, "generation": 0,
                      **{name: {} for name in COLLECTIONS}}
             store.validate(state)
@@ -129,7 +129,7 @@ class Store:
         except FileExistsError as exc:
             raise Conflict("Writer lock exists. Check for a live writer before manually removing a stale lock") from exc
         try:
-            (lock / "owner").write_text(str(os.getpid()), encoding="utf-8")
+            write_utf8(lock / "owner", str(os.getpid()))
             yield
         finally:
             shutil.rmtree(lock)

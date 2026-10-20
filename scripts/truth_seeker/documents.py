@@ -9,9 +9,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from .errors import MissingEvidence
-from .util import digest
+from .util import digest, normalize_newlines
 
-EXTRACTOR = "truth-seeker-text-v1"
+EXTRACTOR = "truth-seeker-text-v2"
 
 
 class HTMLText(HTMLParser):
@@ -148,7 +148,7 @@ def extract(data, kind, selector=None):
                 raise MissingEvidence("Word supports a heading selector")
         elif kind == "html":
             parser = HTMLText()
-            parser.feed(data.decode("utf-8-sig"))
+            parser.feed(normalize_newlines(data.decode("utf-8-sig")))
             text = "".join(parser.parts)
             headings = [(h[0], h[3], len("".join(parser.parts[:h[2]]))) for h in parser.headings]
             if selector:
@@ -159,7 +159,7 @@ def extract(data, kind, selector=None):
                            if (h[1] if key == "anchor" else h[3]) == selector[key]]
                 text = choose_section(text, headings, matches)
         else:
-            text = data.decode("utf-8-sig")
+            text = normalize_newlines(data.decode("utf-8-sig"))
             if kind == "markdown" and selector:
                 headings = markdown_sections(text)
                 if "heading_path" in selector:
@@ -197,7 +197,8 @@ def extract(data, kind, selector=None):
         raise
     except Exception as exc:
         raise MissingEvidence(f"Cannot extract {kind}: {exc}") from exc
-    return {"text": text, "content_hash": digest(text.encode()), "artifact_hash": digest(data),
+    text = normalize_newlines(text)
+    return {"text": text, "content_hash": digest(text.encode("utf-8")), "artifact_hash": digest(data),
             "extractor": EXTRACTOR, "parser": parser_id, "selector": selector}
 
 

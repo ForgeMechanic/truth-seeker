@@ -24,6 +24,10 @@ computed hashes identify bytes, not publisher authenticity. Missing provenance i
 recorded as unknown, not fabricated. Import does not create a source or establish a
 semantic relationship.
 
+Cached bytes are never converted to the host's line endings. Extracted text uses LF
+endings for consistent text hashes across checkouts; raw artifact hashes continue to
+identify the exact original bytes.
+
 `fetch SOURCE --allow-network` is a separate explicitly authorized acquisition
 operation. It supports HTTP, HTTPS and local `file:` URLs; remote file hosts require
 manual local import. URLs must not contain credentials. Public HTTP acquisition

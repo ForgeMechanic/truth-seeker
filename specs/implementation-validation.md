@@ -8,12 +8,13 @@ from validation still requiring external CI or another agent host.
 
 | Check | Result |
 | --- | --- |
-| Linux, Python 3.11.17 | 54 tests passed |
-| Linux, Python 3.14.4 | 54 tests passed |
+| Linux, Python 3.11.17 | 68 tests: 67 passed, 1 case-insensitive-volume check skipped |
+| Linux, Python 3.14.4 | 68 tests: 67 passed, 1 case-insensitive-volume check skipped |
 | Portable skill and reference validation | Passed |
 | Skill-creator structural validation | Passed |
 | Isolated helper installation and source-archive smoke exercise | Passed |
-| Windows and macOS GitHub Actions jobs | Configured; not yet run |
+| Initial GitHub Actions run | Both Linux jobs passed; Windows/macOS exposed path-alias and fixture-newline assumptions |
+| Portability corrections | Actual Windows/macOS rerun pending |
 
 The automated suite exercises deterministic behavior using temporary consumer
 repositories and cache roots. It covers record validity and interrupted writes,
@@ -107,9 +108,24 @@ requirements specification. Test names are in `tests/test_workflow.py` unless no
 
 `.github/workflows/test.yml` defines actual Ubuntu, Windows and macOS jobs for Python
 3.11 and 3.14, including source installation, the test suite, skill validation, and
-wheel construction. These jobs have not been dispatched by this local implementation
-work. Windows/macOS execution and resulting green checks must not be inferred from
-Linux success or a valid workflow file.
+wheel construction. The [initial run](https://github.com/ForgeMechanic/truth-seeker/actions/runs/39362313104)
+passed both Linux jobs. macOS and Windows exposed a test comparing a resolved root
+with its unresolved alias; Windows also exposed a fixture that implicitly wrote CRLF
+but expected LF bytes. The corrections preserve real filesystem identity and exact
+cached bytes, rather than converting cached artifacts to satisfy an assertion.
+
+Related production corrections normalize extracted text before hashing, write
+first-party files and redirected CLI output in UTF-8/LF, accept BOM-prefixed UTF-8 JSON,
+handle native directory arguments and home-relative paths consistently, and use user
+cache defaults when platform environment variables are empty. Regression checks cover
+these cases, directory aliases and cache containment, and bundle validation that
+distinguishes actual schema drift from newline differences. The actual OS matrix
+must pass on the corrected revision before claiming cross-platform validation.
+
+Containment and directory selection also check filesystem identity when resolved
+spellings differ, covering case aliases on case-insensitive volumes without folding
+distinct paths together on case-sensitive volumes. The complementary filesystem
+tests run where the volume supports their respective behavior.
 
 The skill is agent-independent in its interface, but only the current host's
 in-session workflow has been exercised. Other agent hosts and an independent fresh
@@ -127,5 +143,6 @@ removal requires user instructions when such records are affected. Decisions lef
 without sources are preserved with an unresolved question. A user may need to make
 those project-specific decisions during actual use.
 
-The implementation has not been installed into the user's skill directories,
-committed, pushed, or published as part of this work.
+These validation exercises do not install the skill into the user's skill directories
+or publish a release. Source commits and GitHub Actions results are separate from
+release publication.

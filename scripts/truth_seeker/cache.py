@@ -8,7 +8,7 @@ from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener, url2pathname
 
 from .errors import MissingEvidence, TruthSeekerError
-from .util import atomic_json, digest, now, read_json
+from .util import atomic_json, digest, is_within, now, read_json
 
 MAX_BYTES = 64 * 1024 * 1024
 
@@ -17,10 +17,10 @@ def default_root():
     if os.environ.get("TRUTH_SEEKER_CACHE"):
         return Path(os.environ["TRUTH_SEEKER_CACHE"])
     if sys.platform == "win32":
-        return Path(os.environ.get("LOCALAPPDATA", Path.home() / "AppData" / "Local")) / "truth-seeker" / "Cache"
+        return Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local") / "truth-seeker" / "Cache"
     if sys.platform == "darwin":
         return Path.home() / "Library" / "Caches" / "truth-seeker"
-    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "truth-seeker"
+    return Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "truth-seeker"
 
 
 class RestrictedRedirect(HTTPRedirectHandler):
@@ -33,16 +33,16 @@ class RestrictedRedirect(HTTPRedirectHandler):
 
 class Cache:
     def __init__(self, repository, root=None, shared=()):
-        repository = Path(repository).resolve()
+        repository = Path(repository).expanduser().resolve()
         self.repository = repository
         self.root = Path(root or default_root()).expanduser().resolve()
         self.roots = [self.root, *(Path(p).expanduser().resolve() for p in shared)]
-        if any(p.is_relative_to(repository) for p in self.roots):
+        if any(is_within(repository, p) for p in self.roots):
             raise TruthSeekerError("External cache must be outside the consumer repository")
 
     def location(self, root, *parts):
         path = root.joinpath(*parts).resolve()
-        if not path.is_relative_to(root) or path.is_relative_to(self.repository):
+        if not is_within(root, path) or is_within(self.repository, path):
             raise TruthSeekerError("Cache symlink escapes its configured external root")
         return path
 

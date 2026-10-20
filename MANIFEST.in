@@ -1,4 +1,4 @@
-include SKILL.md README.md LICENSE pyproject.toml
+include SKILL.md README.md LICENSE pyproject.toml .gitattributes
 include scripts/truth-seeker.py scripts/validate-skill.py scripts/prepare-evaluation.py
 recursive-include references *.md
 recursive-include schemas *.json

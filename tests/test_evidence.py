@@ -21,6 +21,23 @@ from truth_seeker.util import digest
 
 
 class Documents(unittest.TestCase):
+    def test_line_endings_normalize_extracted_text_without_changing_artifact_identity(self):
+        cases = [
+            ("markdown", "# Contract\n## Rule\ncafé\n", {"heading_path": ["Contract", "Rule"]}),
+            ("html", '<h1>Contract</h1>\n<h2 id="rule">Rule</h2>\n<p>café</p>\n', {"anchor": "rule"}),
+            ("text", "class Suite:\n    def test_rule(self):\n        assert 'café'\n", {"python": "Suite.test_rule"}),
+            ("text", "First\ncafé\nLast\n", {"lines": [2, 2]}),
+        ]
+        for kind, text, selector in cases:
+            expected = extract(text.encode("utf-8"), kind, selector)
+            for ending in ("\n", "\r\n", "\r"):
+                with self.subTest(kind=kind, ending=repr(ending)):
+                    data = text.replace("\n", ending).encode("utf-8")
+                    actual = extract(data, kind, selector)
+                    self.assertEqual(actual["text"], expected["text"])
+                    self.assertEqual(actual["content_hash"], expected["content_hash"])
+                    self.assertEqual(actual["artifact_hash"], digest(data))
+
     def test_markdown_path_disambiguates_and_fences_are_ignored(self):
         text = b"# One\n## Rule\nA\n# Two\n## Rule\nB\n```\n## Fake\n```\n"
         with self.assertRaises(MissingEvidence):
@@ -125,7 +142,7 @@ class ExternalEvidence(unittest.TestCase):
 
     def artifact(self, text):
         path = self.store.root.parent / "supplied document.md"
-        path.write_text(text, encoding="utf-8")
+        path.write_bytes(text.encode("utf-8"))
         return path
 
     def test_cache_only_existing_and_missing_evidence_never_contacts_network(self):
@@ -146,6 +163,26 @@ class ExternalEvidence(unittest.TestCase):
         (self.cache.root / "objects" / source["object_hash"]).write_bytes(b"Corrupt")
         with self.assertRaises(MissingEvidence):
             self.service.evidence.source(source)
+
+    def test_import_preserves_crlf_bytes_and_uses_canonical_text_for_review(self):
+        path = self.artifact("ignored")
+        original = "# Rule\r\n规范 café\r\n".encode("utf-8")
+        path.write_bytes(original)
+        source = self.service.import_source("external", path, expected_hash=digest(original))
+        self.assertEqual(self.cache.read(source["object_hash"]), original)
+        extracted = self.service.evidence.source(source)
+        self.assertEqual(extracted["text"], "# Rule\n规范 café\n")
+        self.assertEqual(extracted["content_hash"], digest("# Rule\n规范 café\n".encode("utf-8")))
+        self.assertEqual(extracted["artifact_hash"], digest(original))
+
+    def test_empty_platform_cache_variables_use_user_defaults(self):
+        home = self.store.root.parent / "user home"
+        with patch.dict(os.environ, {"TRUTH_SEEKER_CACHE": "", "LOCALAPPDATA": "", "XDG_CACHE_HOME": ""}), patch("truth_seeker.cache.Path.home", return_value=home):
+            for platform, relative in (("win32", "AppData/Local/truth-seeker/Cache"),
+                                       ("darwin", "Library/Caches/truth-seeker"),
+                                       ("linux", ".cache/truth-seeker")):
+                with self.subTest(platform=platform), patch("truth_seeker.cache.sys.platform", platform):
+                    self.assertEqual(default_root(), home / relative)
 
     def test_refresh_keeps_selected_version_and_review_baseline(self):
         source = self.service.import_source("external", self.artifact("# Rule\nOld"))

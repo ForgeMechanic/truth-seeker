@@ -6,11 +6,13 @@ from pathlib import Path
 from truth_seeker.cache import Cache
 from truth_seeker.service import Service
 from truth_seeker.store import Store
-from truth_seeker.util import read_json
+from truth_seeker.util import configure_output, read_json
 
+configure_output()
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("directory", type=Path)
 args = parser.parse_args()
+args.directory = args.directory.expanduser().resolve()
 fixture = Path(__file__).resolve().parents[1] / "tests/fixtures/alignment"
 if args.directory.exists():
     parser.error("Choose a new evaluation directory")

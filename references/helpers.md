@@ -14,10 +14,13 @@ python HELPER --root CONSUMER --cache EXTERNAL_CACHE --cache-only OPERATION ...
 `HELPER`, `CONSUMER`, `EXTERNAL_CACHE`, `RUN`, and `TEST` below are placeholders.
 `--root` can be omitted after initialization: it searches the current directory and
 parents. `init` without it initializes the current directory. IDs are explicit stable
-strings. Repository paths use forward slashes on all platforms and cannot escape the
-repository. The helper never executes consumer tests or invokes Git.
+strings. Recorded repository paths use forward slashes on all platforms and cannot
+escape the repository. CLI `--directory` also accepts native OS separators, converting
+them to the stored format. The helper never executes consumer tests or invokes Git.
 
-Output is UTF-8 JSON except `report --markdown`. Exit status: 0 success, 2 invalid
+Output is UTF-8 JSON except `report --markdown`, which is UTF-8 text. Redirected output
+does not depend on the host's default code page. JSON input accepts UTF-8 with or
+without a BOM. Exit status: 0 success, 2 invalid
 input/unavailable operation, 3 stale state or an unmet confirmation prerequisite.
 A successful plan/report can contain blocked work; exit 0 does not mean alignment.
 

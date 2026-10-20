@@ -56,7 +56,8 @@ class Workflow(unittest.TestCase):
         return self.service.accept_decision(key, "User accepts this difference")
 
     def test_initialize_is_readable_and_non_destructive(self):
-        self.assertEqual(find_root(self.root / "tests"), self.root)
+        self.assertEqual(find_root(self.root / "tests"), self.store.root)
+        self.assertTrue(find_root(self.root / "tests").samefile(self.root))
         self.assertTrue((self.store.directory / "schemas/knowledge.schema.json").is_file())
         self.assertTrue((self.store.directory / "AGENTS.md").is_file())
         self.assertFalse((self.root / "AGENTS.md").exists())
@@ -379,6 +380,49 @@ class Workflow(unittest.TestCase):
         run = json.loads(result.stdout)
         self.assertEqual(run["summary"], {"pending": 1})
         self.assertNotIn("basis", run["items"]["a"])
+
+    def test_line_ending_changes_reuse_text_but_preserve_reviewed_artifact_hashes(self):
+        review = self.finish()
+        hashes = {}
+        for path in (self.test_path, self.root / "spec.md"):
+            original = path.read_bytes()
+            lf = original.replace(b"\r\n", b"\n")
+            replacement = lf if b"\r\n" in original else lf.replace(b"\n", b"\r\n")
+            self.assertNotEqual(digest(original), digest(replacement))
+            hashes[path.name] = digest(original)
+            path.write_bytes(replacement)
+        self.assertEqual(self.run_for()["items"]["a"]["status"], "reused")
+        saved = self.store.load()["reviews"][review["id"]]["evidence_versions"]
+        self.assertEqual(saved["test"]["artifact_hash"], hashes[self.test_path.name])
+        self.assertEqual(saved["link-a"]["artifact_hash"], hashes["spec.md"])
+
+    def test_cli_output_is_utf8_even_with_an_ascii_pipe(self):
+        assertion = "验证 café — 合同"
+        self.store.update(lambda state: state["tests"]["a"].update(assertion=assertion))
+        command = [sys.executable, "-m", "truth_seeker", "--root", str(self.root)]
+        environment = {**os.environ, "PYTHONIOENCODING": "ascii"}
+        result = subprocess.run([*command, "show", "tests", "a"], cwd=self.base,
+                                env=environment, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr.decode("utf-8"))
+        self.assertEqual(json.loads(result.stdout.decode("utf-8"))["assertion"], assertion)
+        missing = self.base / "不存在.json"
+        result = subprocess.run([*command, "register", "tests", str(missing)], cwd=self.base,
+                                env=environment, capture_output=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn(missing.name, json.loads(result.stderr.decode("utf-8"))["error"])
+
+    def test_cli_directory_scope_accepts_native_separators_and_records_portable_paths(self):
+        nested = self.root / "tests" / "nested"
+        nested.mkdir()
+        (nested / "case.py").write_bytes(b"assert True\n")
+        self.service.register("tests", {"id": "nested", "path": "tests/nested/case.py", "assertion": "Nested test"})
+        command = [sys.executable, "-m", "truth_seeker", "--root", str(self.root),
+                   "start", "--directory", os.path.join("tests", "nested")]
+        result = subprocess.run(command, cwd=self.base, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        run = json.loads(result.stdout)
+        self.assertEqual(run["scope"], {"type": "directory", "value": "tests/nested"})
+        self.assertEqual(set(run["items"]), {"nested"})
 
     def test_path_traversal_is_rejected_on_every_platform(self):
         for path in ("../outside.py", "C:/outside.py", "tests\\test_example.py", "/tmp/outside"):

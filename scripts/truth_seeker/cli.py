@@ -9,7 +9,7 @@ from .cache import Cache
 from .errors import Conflict, TruthSeekerError
 from .service import Service
 from .store import Store, find_root
-from .util import read_json
+from .util import configure_output, read_json
 
 
 def parser():
@@ -31,7 +31,7 @@ def parser():
         group = sub.add_mutually_exclusive_group(required=True)
         group.add_argument("--test")
         group.add_argument("--tests", nargs="+")
-        group.add_argument("--directory")
+        group.add_argument("--directory", type=Path)
         group.add_argument("--repository", action="store_true")
         sub.add_argument("--fresh", action="store_true")
         sub.add_argument("--limit", type=int, default=50)
@@ -159,7 +159,7 @@ def execute(args):
     if command in ("plan", "start"):
         scope = {"type": "test", "value": args.test} if args.test else (
             {"type": "group", "value": args.tests} if args.tests else (
-                {"type": "directory", "value": args.directory} if args.directory is not None else {"type": "repository", "value": "."}))
+                {"type": "directory", "value": args.directory.as_posix()} if args.directory is not None else {"type": "repository", "value": "."}))
         return compact(getattr(service, command)(scope, args.fresh), args.limit, args.offset)
     if command == "packet":
         return service.packet(args.run, args.test)
@@ -212,6 +212,7 @@ def execute(args):
 
 
 def main(argv=None):
+    configure_output()
     args = parser().parse_args(argv)
     try:
         result = execute(args)
